@@ -23,11 +23,14 @@ class Perceptron {
 
                 while (!error_indices.empty()) {
                     // Si hay errores, eligo uno aleatorio y corrijo.
-                    int chosen_error_index = Random::get_int(0, error_indices.size()-1);
+                    int chosen_error_index = 0;
+                    if (error_indices.size() > 1) {
+                        chosen_error_index = Random::get_int(0, error_indices.size()-1);
+                    }
 
                     // w' = w + yx
-                    Matrix yx = W.scalar_product(chosen_error_index, Y[0, chosen_error_index]);
-                    W = W + yx;
+                    Matrix yx = X.scalar_product(error_indices[chosen_error_index], Y[error_indices[chosen_error_index], 0]);
+                    W = W + yx.transpose();
                 
                     error_indices.erase(error_indices.begin() + chosen_error_index);
                 }
@@ -43,12 +46,12 @@ class Perceptron {
 
     private:
         static std::vector<std::size_t> get_error_indices(Matrix const &errors) {
-            assert(errors.rows() == 1);
+            assert(errors.cols() == 1);
             
             std::vector<std::size_t> res;
 
-            for (std::size_t i = 0; i < errors.cols(); i += 1) {
-                if (errors[0, i]) {
+            for (std::size_t i = 0; i < errors.rows(); i += 1) {
+                if (errors[i, 0]) {
                    res.push_back(i);
                 }
             }

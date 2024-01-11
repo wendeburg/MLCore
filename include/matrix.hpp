@@ -118,7 +118,7 @@ class Matrix {
             return res;
         }
 
-        Matrix scalar_product(const std::size_t row, const double scalar) {
+        Matrix scalar_product(const std::size_t row, const double scalar) const {
             Matrix res{1, cols_};
 
             for(auto col{0uz}; col < cols_; col += 1) {
@@ -135,6 +135,18 @@ class Matrix {
 
             for(auto& e : res.data()) { 
                 e = Random::get_double(min, max);
+            }
+
+            return res;
+        }
+
+        Matrix transpose() const {
+            Matrix res{cols_, rows_};
+
+            for (auto col{0uz}; col < cols_; col += 1) {
+                for (auto row{0uz}; row < rows_; row += 1) {
+                    res[col, row] = data_[row, col];
+                }
             }
 
             return res;
