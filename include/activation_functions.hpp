@@ -1,3 +1,5 @@
+#pragma once
+
 class ActivationFuncitons {
     public:
         static double sign(double x) {

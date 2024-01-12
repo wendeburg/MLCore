@@ -151,4 +151,14 @@ class Matrix {
 
             return res;
         }
+
+        void add_scalar_column(double scalar, std::size_t const column_number) {
+            for (int i = 0; i < rows_; ++i) {
+                int index = i * cols_ + column_number;
+
+                data_.insert(data_.begin() + index, scalar);
+
+                cols_ += 1;
+            }
+        }
 };
