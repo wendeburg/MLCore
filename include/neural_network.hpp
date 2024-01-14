@@ -24,11 +24,11 @@ class NeuralNetwork {
         std::vector<Matrix> deltas_;
         double learning_rate_;
 
-        Matrix sigmoid(const Matrix& m) {
+        Matrix sigmoid(Matrix& m) {
             return m.apply([](double val) { return 1.0 / (1.0 + std::exp(-val)); });
         }
 
-        Matrix sigmoid_derivative(const Matrix& m) {
+        Matrix sigmoid_derivative(Matrix& m) {
             return m.apply([](double val) { return val * (1 - val); });
         }
 
@@ -53,7 +53,8 @@ class NeuralNetwork {
 
             for (auto& layer : layers_) {
                 activation.add_scalar_column(1, 0); // Bias term
-                activation = sigmoid(activation * layer);
+                activation = activation * layer;
+                activation = sigmoid(activation);
                 activations_.push_back(activation);
             }
 
@@ -77,12 +78,14 @@ class NeuralNetwork {
             Matrix prev_activation = activations_.front();
 
             for (std::size_t i = 0; i < layers_.size(); ++i) {
-                layers_[i] -= (prev_activation.transpose() * deltas_[i]).apply([this](double val) { return val * learning_rate_; });
+                layers_[i] = layers_[i] - (prev_activation.transpose() * deltas_[i]).apply(update_weights_helper);
                 prev_activation = activations_[i];
             }
         }
 
-        #include <iostream>
+        static double update_weights_helper(double val) {
+            return val * 0.01;
+        }
 
         void fit(const Matrix& X, const Matrix& Y, std::size_t epochs) {
             for (std::size_t epoch = 0; epoch < epochs; ++epoch) {
