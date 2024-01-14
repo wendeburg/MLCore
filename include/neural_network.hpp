@@ -8,6 +8,12 @@
 #include "matrix.hpp"
 #include "activation_functions.hpp"
 
+// Loss function
+double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
+    Matrix diff = predictions - targets;
+    return diff.apply([](double val) { return val * val; }).mean();
+}
+
 class NeuralNetwork {
     using IList = std::initializer_list<std::size_t>;
 

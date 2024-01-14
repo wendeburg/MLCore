@@ -81,6 +81,21 @@ class Matrix {
             return res;
         }
 
+        Matrix operator-(Matrix const& R) const {
+            assert( cols_ == R.cols_ && rows_ == R.rows_);
+
+            Matrix const& L = *this;
+            Matrix res{rows_, cols_};
+
+            for(auto r{0uz}; r < rows_; r+=1) {
+                for(auto c{0uz}; c < cols_; c+=1) {
+                    res[r, c] = L[r, c] - R[r, c];
+                }
+            }
+
+            return res;
+        }
+
         Matrix& apply(double (*func)(double)) {
             std::ranges::transform(data_, data_.begin(), func);
             return *this;
