@@ -12,7 +12,7 @@ class Perceptron {
             int w_best_error_count = INT_MAX;
 
             for(auto i{0uz}; i < maxiter; i+=1) {
-                Matrix H = (X * W).apply(ActivationFuncitons::sign);
+                Matrix H = (X * W).apply(ActivationFunctions::sign);
                 Matrix Hcmp = H != Y;
                 std::vector<std::size_t> error_indices = get_error_indices(Hcmp);
                 int errors_commited = error_indices.size();
