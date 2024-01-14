@@ -45,7 +45,7 @@ class NeuralNetwork {
 
         void fit(Matrix const& X, Matrix const& Y, std::size_t const epochs) {
             for(auto i{0uz}; i < epochs; i+=1) {
-                Matrix ff_result =  feedforward(X).apply(ActivationFuncitons::sign);
+                Matrix ff_result =  feedforward(X).apply(ActivationFunctions::sign);
                 //auto err = 
                 //   (NN.feedforward(X)
                 //      .apply( Matrix::sign ) != Y
