@@ -176,4 +176,15 @@ class Matrix {
                 cols_ += 1;
             }
         }
+
+        // Mean
+        double mean() const {
+            double res{};
+
+            for (auto e : data_) {
+                res += e;
+            }
+
+            return res / data_.size();
+        }
 };
