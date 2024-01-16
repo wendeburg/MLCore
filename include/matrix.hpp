@@ -148,7 +148,7 @@ class Matrix {
 
             Matrix res{rows, cols};
 
-            for(auto& e : res.data()) { 
+            for(auto& e : res.data_) { 
                 e = Random::get_double(min, max);
             }
 
@@ -168,12 +168,12 @@ class Matrix {
         }
 
         void add_scalar_column(double scalar, std::size_t const column_number) {
+            cols_ += 1;
+
             for (int i = 0; i < rows_; ++i) {
                 int index = i * cols_ + column_number;
 
                 data_.insert(data_.begin() + index, scalar);
-
-                cols_ += 1;
             }
         }
 

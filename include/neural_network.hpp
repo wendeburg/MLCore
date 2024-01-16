@@ -43,7 +43,7 @@ class NeuralNetwork {
             assert(arch.size() >= 2);
             assert(*arch.begin() > 0);
             for(auto it = arch.begin(); it != arch.end() - 1; ++it) {
-                layers_.emplace_back(Matrix::rand(*it + 1, *(it + 1), min_rnd_num, max_rnd_num));
+                layers_.push_back(Matrix::rand(*it + 1, *(it + 1), min_rnd_num, max_rnd_num));
             }
         }
 
@@ -93,7 +93,7 @@ class NeuralNetwork {
                 backpropagate(Y);
                 update_weights();
 
-                if (epoch % 100 == 0) {
+                if (epoch % 1 == 0) {
                     double loss = compute_loss(output, Y);
                     std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
                 }
