@@ -69,7 +69,7 @@ class NeuralNetwork {
             deltas_.push_back(delta);
 
             for (int i = layers_.size() - 2; i >= 0; --i) {
-                delta = delta * layers_[i].transpose();
+                delta = delta * layers_[i + 1].transpose();
                 delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
                 deltas_.push_back(delta);
             }
