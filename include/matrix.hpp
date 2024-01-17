@@ -4,6 +4,8 @@
 #include <cassert>
 #include <initializer_list>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #include "random.hpp"
 
@@ -186,5 +188,31 @@ class Matrix {
             }
 
             return res / data_.size();
+        }
+
+        std::string to_string() const {
+            bool row_start = true;
+
+            std::stringstream ss;
+            
+            ss << "Matrix " << rows_ << "x" << cols_ << " {\n\n";
+
+            for (std::size_t i = 1; i <= data_.size(); i+=1) {
+                if (row_start) {
+                    ss << "   [ ";
+                    row_start = false;
+                }
+
+                ss << data_[i-1] << " ";
+
+                if (i % cols_ == 0) {
+                    ss << "]\n";
+                    row_start = true;
+                }
+            }
+
+            ss << "\n}\n";
+
+            return ss.str();
         }
 };
