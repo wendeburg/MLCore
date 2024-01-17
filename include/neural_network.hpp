@@ -5,6 +5,7 @@
 #include <span>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "matrix.hpp"
 #include "activation_functions.hpp"
@@ -62,13 +63,15 @@ class NeuralNetwork {
         }
 
         void backpropagate(const Matrix& target) {
+            // Compute loss derivative
             Matrix error = compute_loss_derivative(activations_.back(), target);
+            Matrix delta = error.element_multiply(sigmoid_derivative(activations_.back()));
+            deltas_.push_back(delta);
 
-            for (int i = layers_.size() - 1; i >= 0; --i) {
-                Matrix delta = error * sigmoid_derivative(activations_[i]);
+            for (int i = layers_.size() - 2; i >= 0; --i) {
+                delta = delta * layers_[i].transpose();
+                delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
                 deltas_.push_back(delta);
-
-                error = delta * layers_[i].transpose();
             }
 
             std::reverse(deltas_.begin(), deltas_.end());
