@@ -4,6 +4,8 @@
 #include <cassert>
 #include <initializer_list>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #include "random.hpp"
 
@@ -81,6 +83,21 @@ class Matrix {
             return res;
         }
 
+        Matrix operator-(Matrix const& R) const {
+            assert( cols_ == R.cols_ && rows_ == R.rows_);
+
+            Matrix const& L = *this;
+            Matrix res{rows_, cols_};
+
+            for(auto r{0uz}; r < rows_; r+=1) {
+                for(auto c{0uz}; c < cols_; c+=1) {
+                    res[r, c] = L[r, c] - R[r, c];
+                }
+            }
+
+            return res;
+        }
+
         Matrix& apply(double (*func)(double)) {
             std::ranges::transform(data_, data_.begin(), func);
             return *this;
@@ -133,7 +150,7 @@ class Matrix {
 
             Matrix res{rows, cols};
 
-            for(auto& e : res.data()) { 
+            for(auto& e : res.data_) { 
                 e = Random::get_double(min, max);
             }
 
@@ -153,12 +170,64 @@ class Matrix {
         }
 
         void add_scalar_column(double scalar, std::size_t const column_number) {
+            cols_ += 1;
+
             for (int i = 0; i < rows_; ++i) {
                 int index = i * cols_ + column_number;
 
                 data_.insert(data_.begin() + index, scalar);
-
-                cols_ += 1;
             }
+        }
+
+        Matrix element_multiply(Matrix const& R) const {
+            assert(cols_ == R.cols_ && rows_ == R.rows_);
+
+            Matrix const& L = *this;
+            Matrix res{rows_, cols_};
+
+            for(auto r{0uz}; r < rows_; r+=1) {
+                for(auto c{0uz}; c < cols_; c+=1) {
+                    res[r, c] = L[r, c] * R[r, c];
+                }
+            }
+
+            return res;
+        }
+
+        // Mean
+        double mean() const {
+            double res{};
+
+            for (auto e : data_) {
+                res += e;
+            }
+
+            return res / data_.size();
+        }
+
+        std::string to_string() const {
+            bool row_start = true;
+
+            std::stringstream ss;
+            
+            ss << "Matrix " << rows_ << "x" << cols_ << " {\n\n";
+
+            for (std::size_t i = 1; i <= data_.size(); i+=1) {
+                if (row_start) {
+                    ss << "   [ ";
+                    row_start = false;
+                }
+
+                ss << data_[i-1] << " ";
+
+                if (i % cols_ == 0) {
+                    ss << "]\n";
+                    row_start = true;
+                }
+            }
+
+            ss << "\n}\n";
+
+            return ss.str();
         }
 };
