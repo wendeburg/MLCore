@@ -23,6 +23,8 @@ class NeuralNetwork {
         std::vector<Matrix> layers_{};
         std::vector<Matrix> activations_;
         std::vector<Matrix> deltas_;
+        std::vector<Matrix> bias_;
+        Matrix input;
         double learning_rate_;
 
         Matrix sigmoid(Matrix& m) {
@@ -44,17 +46,19 @@ class NeuralNetwork {
             assert(arch.size() >= 2);
             assert(*arch.begin() > 0);
             for(auto it = arch.begin(); it != arch.end() - 1; ++it) {
-                layers_.push_back(Matrix::rand(*it + 1, *(it + 1), min_rnd_num, max_rnd_num));
+                layers_.push_back(Matrix::rand(*it, *(it + 1), min_rnd_num, max_rnd_num));
+                bias_.push_back(Matrix::rand(1, *(it + 1), min_rnd_num, max_rnd_num));
             }
         }
 
         Matrix feedforward(const Matrix& input) {
             activations_.clear();
             Matrix activation = input;
+            this->input = input;
+            //activations_.push_back(activation);
 
-            for (auto& layer : layers_) {
-                activation.add_scalar_column(1, 0); // Bias term
-                activation = activation * layer;
+            for (auto i = 0; i < layers_.size(); ++i) {
+                activation = activation * layers_[i] + bias_[i].copy_row(0, activation.rows());
                 activation = sigmoid(activation);
                 activations_.push_back(activation);
             }
@@ -63,13 +67,26 @@ class NeuralNetwork {
         }
 
         void backpropagate(const Matrix& target) {
+            for (int i = 0; i < layers_.size(); ++i) {
+                //std::cout << layers_[i].to_string() << std::endl;
+                //std::cout << activations_[i].to_string() << std::endl;
+            }
+
             // Compute loss derivative
             Matrix error = compute_loss_derivative(activations_.back(), target);
             Matrix delta = error.element_multiply(sigmoid_derivative(activations_.back()));
             deltas_.push_back(delta);
+            
+            
 
             for (int i = layers_.size() - 2; i >= 0; --i) {
                 delta = delta * layers_[i + 1].transpose();
+                //std::cout << delta.to_string() << std::endl;
+                // Print delta and activation[i] sizes
+                // std::cout << delta.to_string() << std::endl;
+                // std::cout << activations_[i].to_string() << std::endl;
+                //std::cout << "Delta size: " << delta.rows() << "x" << delta.cols() << std::endl;
+                //std::cout << "Activation size: " << activations_[i].rows() << "x" << activations_[i].cols() << std::endl;
                 delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
                 deltas_.push_back(delta);
             }
@@ -78,16 +95,17 @@ class NeuralNetwork {
         }
 
         void update_weights() {
-            Matrix prev_activation = activations_.front();
+            Matrix prev_activation = this->input;
 
             for (std::size_t i = 0; i < layers_.size(); ++i) {
-                layers_[i] = layers_[i] - (prev_activation.transpose() * deltas_[i]).apply(update_weights_helper);
+                layers_[i] = layers_[i] - ((prev_activation.transpose() * deltas_[i]).divide_scalar(deltas_[i].rows())).apply(update_weights_helper);
                 prev_activation = activations_[i];
+                bias_[i] = bias_[i] - deltas_[i].sum_rows().divide_scalar(deltas_[i].rows()).apply(update_weights_helper);
             }
         }
 
         static double update_weights_helper(double val) {
-            return val * 0.01;
+            return val * 0.2;
         }
 
         void fit(const Matrix& X, const Matrix& Y, std::size_t epochs) {

@@ -135,6 +135,28 @@ class Matrix {
             return res;
         }
 
+        Matrix sum_rows() const {
+            Matrix res{1, cols_};
+
+            for(auto c{0uz}; c < cols_; c += 1) {
+                res[0, c] = sum_column(c);
+            }
+
+            return res;
+        }
+
+        Matrix divide_scalar(const double scalar) const {
+            Matrix res{rows_, cols_};
+
+            for(auto r{0uz}; r < rows_; r += 1) {
+                for(auto c{0uz}; c < cols_; c += 1) {
+                    res[r, c] = data_[r*cols_ + c] / scalar;
+                }
+            }
+
+            return res;
+        }
+
         Matrix scalar_product(const std::size_t row, const double scalar) const {
             Matrix res{1, cols_};
 
@@ -203,6 +225,38 @@ class Matrix {
             }
 
             return res / data_.size();
+        }
+
+        Matrix remove_column(std::size_t const column) const {
+            assert(column < cols_);
+
+            Matrix res{rows_, cols_ - 1};
+
+            for (auto r{0uz}; r < rows_; r += 1) {
+                for (auto c{0uz}; c < cols_; c += 1) {
+                    if (c < column) {
+                        res[r, c] = data_[r*cols_ + c];
+                    } else if (c > column) {
+                        res[r, c - 1] = data_[r*cols_ + c];
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        Matrix copy_row(std::size_t const row, int const times) const {
+            assert(times > 0);
+
+            Matrix res{times, cols_};
+
+            for (int i= 0; i < times; i++) {
+                for (int j =0; j < this->cols_; j++) {
+                    res[i,j] = this->data_[row, j];
+                }
+            }
+
+            return res;
         }
 
         std::string to_string() const {
