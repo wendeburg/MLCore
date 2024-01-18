@@ -205,6 +205,8 @@ class Matrix {
             return res / data_.size();
         }
 
+        
+
         std::string to_string() const {
             bool row_start = true;
 

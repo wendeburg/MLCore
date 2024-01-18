@@ -70,6 +70,12 @@ class NeuralNetwork {
 
             for (int i = layers_.size() - 2; i >= 0; --i) {
                 delta = delta * layers_[i + 1].transpose();
+                // Remove bias term
+                //delta = delta.remove_column(0);
+                std::cout << delta.to_string() << std::endl;
+                // Print delta and activation[i] sizes
+                std::cout << "Delta size: " << delta.rows() << "x" << delta.cols() << std::endl;
+                std::cout << "Activation size: " << activations_[i].rows() << "x" << activations_[i].cols() << std::endl;
                 delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
                 deltas_.push_back(delta);
             }
