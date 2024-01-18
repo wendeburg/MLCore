@@ -16,7 +16,7 @@ int main() {
     Matrix y_test({0,0,0,0,0,0,0,1}, 1);
     
     NeuralNetwork nn{3, 2, 1};
-    nn.fit(x_test, y_test, 5);
+    nn.fit(x_test, y_test, 10000);
 
     // Matrix x_test({0, 0,
     //                 0, 1,
