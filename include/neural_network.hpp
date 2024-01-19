@@ -101,16 +101,20 @@ class NeuralNetwork {
             }
         }
 
-        void fit(const Matrix& X, const Matrix& Y, std::size_t epochs) {
+        void fit(const Matrix& X, const Matrix& Y, std::size_t epochs, bool verbose) {
             for (std::size_t epoch = 0; epoch < epochs; epoch += 1) {
                 feedforward(X);
                 backpropagate(Y);
                 update_weights(X);
 
-                if (epoch % 100 == 0) {
+                if (verbose) {
                     double loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
                     std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
                 }
+            }
+
+            if (verbose) {
+                std::cout << "Training complete" << std::endl;
             }
         }
 
