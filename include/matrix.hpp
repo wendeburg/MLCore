@@ -277,6 +277,10 @@ class Matrix {
             data_.clear();
         }
 
+        bool is_empty() const {
+            return data_.size() == 0 && cols_ == 0 && rows_ == 0;
+        }
+
         std::string to_string() const {
             bool row_start = true;
 
