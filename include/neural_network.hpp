@@ -25,10 +25,6 @@ class NeuralNetwork {
 
         double learning_rate_;
 
-        Matrix sigmoid_derivative(Matrix& m) {
-            return m.apply([](double val) { return val * (1 - val); });
-        }
-
         Matrix compute_loss_derivative(const Matrix& predictions, const Matrix& targets) {
             return predictions - targets;
         }
@@ -60,15 +56,13 @@ class NeuralNetwork {
         }
 
         void backpropagate(const Matrix& target) {
-            Matrix last_layer_output = layers_[layers_.size()-1].last_outputs();
             Matrix error = compute_loss_derivative(layers_[layers_.size()-1].last_outputs(), target);
-            Matrix delta = error.element_multiply(sigmoid_derivative(last_layer_output));
+            Matrix delta = error.element_multiply(layers_[layers_.size()-1].last_outputs_apply_act_func_deriv());
             layers_[layers_.size()-1].set_delta(delta);
 
             for (int i = layers_.size()-2; i >= 0; i -= 1) {
                 Matrix layer_error = layers_[i+1].deltas() * layers_[i+1].weights().transpose();
-                Matrix prev_layer_outputs = layers_[i].last_outputs();
-                layers_[i].set_delta(layer_error.element_multiply(sigmoid_derivative(prev_layer_outputs)));
+                layers_[i].set_delta(layer_error.element_multiply(layers_[i].last_outputs_apply_act_func_deriv()));
             }
         }
 
