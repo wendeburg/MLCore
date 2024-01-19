@@ -16,7 +16,13 @@ int main() {
     arch.emplace_back(1, ActivationFunctions::sigmoid);
 
     NeuralNetwork nn(2, arch, LossFunctions::mean_squared_error);
-    nn.fit(x_test, y_test, 100, true);
+    TrainResult r =  nn.fit(x_test, y_test, 50, true);
+
+    std::cout << "\n" << std::endl;
+
+    for (double d : r.training_loss) {
+        std::cout << d << std::endl;
+    }
 
     // Matrix x_test({0, 0,
     //                 0, 1,

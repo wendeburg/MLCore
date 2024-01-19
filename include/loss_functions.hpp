@@ -1,6 +1,6 @@
-#include "matrix.hpp"
-
 #pragma once
+
+#include "matrix.hpp"
 
 namespace LossFunctions {
     using LossFunction = double(*)(const Matrix&, const Matrix&);

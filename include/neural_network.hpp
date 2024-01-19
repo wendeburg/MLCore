@@ -13,12 +13,7 @@
 #include "loss_functions.hpp"
 #include "layer.hpp"
 #include "layer_descriptor.hpp"
-
-// Loss function
-double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
-    Matrix diff = predictions - targets;
-    return diff.apply([](double val) { return val * val; }).mean();
-}
+#include "train_result.hpp"
 
 class NeuralNetwork {
     using ActivationFunction = ActivationFunctions::ActivationFunction;
@@ -102,20 +97,28 @@ class NeuralNetwork {
             }
         }
 
-        void fit(const Matrix& X, const Matrix& Y, std::size_t epochs, bool verbose, const Matrix& val_x = Matrix(), const Matrix& val_y = Matrix()) {
+        TrainResult fit(const Matrix& X, const Matrix& Y, std::size_t epochs, bool verbose, const Matrix& val_x = Matrix(), const Matrix& val_y = Matrix()) {
+            TrainResult res;
             bool validation = !val_x.is_empty() && !val_y.is_empty();
-            
+
             for (std::size_t epoch = 0; epoch < epochs; epoch += 1) {
                 feedforward(X);
                 backpropagate(Y);
                 update_weights(X);
 
+                double training_loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
+                res.training_loss.push_back(training_loss);
+
+                double validation_loss = 0;
+                if (validation) {
+                    validation_loss = loss_f(predict(val_x), val_y);
+                    res.validation_loss.push_back(training_loss);
+                }
+
                 if (verbose) {
-                    double loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
-                    std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << loss;
+                    std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << training_loss;
 
                     if (validation) {
-                        double validation_loss = loss_f(predict(val_x), val_y);
                         std::cout << ", Validation Loss: " << validation_loss << std::endl;
                     }
                     else {
@@ -127,6 +130,8 @@ class NeuralNetwork {
             if (verbose) {
                 std::cout << "Training complete" << std::endl;
             }
+
+            return res;
         }
 
         Matrix predict(const Matrix& X) {
