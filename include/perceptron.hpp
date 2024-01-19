@@ -21,7 +21,7 @@ class Perceptron {
                 if (errors_commited == 0) {
                     w_best_error_count = errors_commited;
                     W_best = W;
-
+                    std::cout << "Early stop at iteration " << i << std::endl;
                     break;
                 }
 
