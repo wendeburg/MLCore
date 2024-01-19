@@ -103,6 +103,8 @@ class NeuralNetwork {
         }
 
         void fit(const Matrix& X, const Matrix& Y, std::size_t epochs, bool verbose, const Matrix& val_x = Matrix(), const Matrix& val_y = Matrix()) {
+            bool validation = !val_x.is_empty() && !val_y.is_empty();
+            
             for (std::size_t epoch = 0; epoch < epochs; epoch += 1) {
                 feedforward(X);
                 backpropagate(Y);
@@ -112,7 +114,7 @@ class NeuralNetwork {
                     double loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
                     std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << loss;
 
-                    if (!val_x.is_empty() && !val_y.is_empty()) {
+                    if (validation) {
                         double validation_loss = loss_f(predict(val_x), val_y);
                         std::cout << ", Validation Loss: " << validation_loss << std::endl;
                     }
