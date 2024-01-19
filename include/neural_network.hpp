@@ -33,33 +33,6 @@ class NeuralNetwork {
             return predictions - targets;
         }
 
-    public:
-        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, LossFunction loss, double learning_rate = 0.01) : learning_rate_(learning_rate) {
-            assert(arch.size() >= 1);
-            assert(input_dim > 0);
-
-            loss_f = loss;
-
-            loss_f_derivative = LossFunctions::get_derivative_from_loss(loss);
-
-            assert(loss_f != NULL && loss_f_derivative != NULL);
-
-            for(auto it = arch.begin(); it != arch.end(); ++it) {
-                std::size_t rows;
-                ActivationFunction activf = it->activation_function();
-                std::size_t columns = it->neurons_amount();
-
-                if (it == arch.begin()) {
-                    rows = input_dim;
-                }
-                else {
-                    rows = (it-1)->neurons_amount();
-                }
-
-                layers_.emplace_back(rows, columns, activf, ActivationFunctions::get_derivative_from_activation(activf));
-            }
-        }
-
         void clear_layers_grads_and_intermediate_results() {
             for (Layer l : layers_) {
                 l.zero_grads();
@@ -100,6 +73,34 @@ class NeuralNetwork {
                 l.update_weights(prev_outputs, learning_rate_);
                 l.update_bias(learning_rate_);
                 prev_outputs = l.last_outputs();
+            }
+        }
+
+
+    public:
+        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, LossFunction loss, double learning_rate = 0.01) : learning_rate_(learning_rate) {
+            assert(arch.size() >= 1);
+            assert(input_dim > 0);
+
+            loss_f = loss;
+
+            loss_f_derivative = LossFunctions::get_derivative_from_loss(loss);
+
+            assert(loss_f != NULL && loss_f_derivative != NULL);
+
+            for(auto it = arch.begin(); it != arch.end(); ++it) {
+                std::size_t rows;
+                ActivationFunction activf = it->activation_function();
+                std::size_t columns = it->neurons_amount();
+
+                if (it == arch.begin()) {
+                    rows = input_dim;
+                }
+                else {
+                    rows = (it-1)->neurons_amount();
+                }
+
+                layers_.emplace_back(rows, columns, activf, ActivationFunctions::get_derivative_from_activation(activf));
             }
         }
 
