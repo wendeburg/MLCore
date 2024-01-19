@@ -60,33 +60,61 @@ int main() {
     // TrainResult r =  nn.fit(x_train.remove_column(0), y_train, 100000, true, x_val.remove_column(0), y_val, 500);
 
     // Test with sin function
-    Matrix x_train({
-        #include "x_train.csv"
-        }, 1);
-    Matrix y_train({
-        #include "y_train.csv"
-        }, 1);
-    Matrix x_val({
-        #include "x_test.csv"
-        }, 1);
-    Matrix y_val({
-        #include "y_test.csv"
-        }, 1);
+    // Matrix x_train({
+    //     #include "x_train.csv"
+    //     }, 1);
+    // Matrix y_train({
+    //     #include "y_train.csv"
+    //     }, 1);
+    // Matrix x_val({
+    //     #include "x_test.csv"
+    //     }, 1);
+    // Matrix y_val({
+    //     #include "y_test.csv"
+    //     }, 1);
     
-    std::vector<LayerDescriptor> arch;
-    arch.emplace_back(8, ActivationFunctions::tanh);
-    arch.emplace_back(1, ActivationFunctions::tanh);
+    // std::vector<LayerDescriptor> arch;
+    // arch.emplace_back(8, ActivationFunctions::tanh);
+    // arch.emplace_back(1, ActivationFunctions::tanh);
 
-    NeuralNetwork nn(1, arch, LossFunctions::mean_squared_error, 0.5);
-    TrainResult r =  nn.fit(x_train, y_train, 100000, true, x_val, y_val);
+    // NeuralNetwork nn(1, arch, LossFunctions::mean_squared_error, 0.5);
+    // TrainResult r =  nn.fit(x_train, y_train, 100000, true, x_val, y_val);
 
-    // Compare with actual sin function
-    Matrix x_show({
-        0, 0.1, 0.2, 0.3, 0.4, 0.5,
-        }, 1);
-    std::cout << "Predicted: " << nn.predict(x_show).to_string() << std::endl;
-    std::cout << "Actual: " << x_show.apply([](double val) { return std::sin(val); }).to_string() << std::endl;
+    // // Compare with actual sin function
+    // Matrix x_show({
+    //     0, 0.1, 0.2, 0.3, 0.4, 0.5,
+    //     }, 1);
+    // std::cout << "Predicted: " << nn.predict(x_show).to_string() << std::endl;
+    // std::cout << "Actual: " << x_show.apply([](double val) { return std::sin(val); }).to_string() << std::endl;
 
+
+    // Test with sinC function
+    // Matrix x_train({
+    //     #include "xsinc_train.csv"
+    //     }, 1);
+    // Matrix y_train({
+    //     #include "ysinc_train.csv"
+    //     }, 1);
+    // Matrix x_val({
+    //     #include "xsinc_test.csv"
+    //     }, 1);
+    // Matrix y_val({
+    //     #include "ysinc_test.csv"
+    //     }, 1);
+
+    // std::vector<LayerDescriptor> arch;
+    // arch.emplace_back(8, ActivationFunctions::tanh);
+    // arch.emplace_back(1, ActivationFunctions::tanh);
+
+    // NeuralNetwork nn(1, arch, LossFunctions::mean_squared_error, 0.1);
+    // TrainResult r =  nn.fit(x_train, y_train, 10000, true, x_val, y_val);
+
+    // // Compare with actual sinc function
+    // Matrix x_show({
+    //     0, -3.9, -2.1, 3.5, 4.2, 2.3,
+    //     }, 1);
+    // std::cout << "Predicted: " << nn.predict(x_show).to_string() << std::endl;
+    // std::cout << "Actual: " << x_show.apply([](double val) { return std::sin(M_PI*val) / (M_PI*val); }).to_string() << std::endl;
 
     // Matrix x_test({0, 0,
     //                 0, 1,
