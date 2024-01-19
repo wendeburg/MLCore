@@ -145,7 +145,7 @@ class Matrix {
             return res;
         }
 
-        Matrix divide_scalar(const double scalar) const {
+        Matrix scalar_division(const double scalar) const {
             Matrix res{rows_, cols_};
 
             for(auto r{0uz}; r < rows_; r += 1) {
@@ -157,7 +157,19 @@ class Matrix {
             return res;
         }
 
-        Matrix scalar_product(const std::size_t row, const double scalar) const {
+        Matrix scalar_product(const double scalar) const {
+            Matrix res{rows_, cols_};
+
+            for(auto r{0uz}; r < rows_; r += 1) {
+                for(auto c{0uz}; c < cols_; c += 1) {
+                    res[r, c] = data_[r*cols_ + c] * scalar;
+                }
+            }
+
+            return res;
+        }
+
+        Matrix scalar_product_row(const std::size_t row, const double scalar) const {
             Matrix res{1, cols_};
 
             for(auto col{0uz}; col < cols_; col += 1) {
@@ -245,7 +257,7 @@ class Matrix {
             return res;
         }
 
-        Matrix copy_row(std::size_t const row, int const times) const {
+        Matrix copy_row(std::size_t const row, std::size_t const times) const {
             assert(times > 0);
 
             Matrix res{times, cols_};
@@ -257,6 +269,16 @@ class Matrix {
             }
 
             return res;
+        }
+
+        void clear() {
+            rows_ = 0;
+            cols_ = 0;
+            data_.clear();
+        }
+
+        bool is_empty() const {
+            return data_.size() == 0 && cols_ == 0 && rows_ == 0;
         }
 
         std::string to_string() const {

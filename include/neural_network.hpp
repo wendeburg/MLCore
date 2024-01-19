@@ -6,127 +6,136 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <utility>
 
 #include "matrix.hpp"
 #include "activation_functions.hpp"
-
-// Loss function
-double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
-    Matrix diff = predictions - targets;
-    return diff.apply([](double val) { return val * val; }).mean();
-}
+#include "loss_functions.hpp"
+#include "layer.hpp"
+#include "layer_descriptor.hpp"
+#include "train_result.hpp"
 
 class NeuralNetwork {
-    using IList = std::initializer_list<std::size_t>;
+    using ActivationFunction = ActivationFunctions::ActivationFunction;
+    using LossFunction = LossFunctions::LossFunction;
+    using LossFunctionDerivative = LossFunctions::LossFunctionDerivative;
 
     private:
-        std::vector<Matrix> layers_{};
-        std::vector<Matrix> activations_;
-        std::vector<Matrix> deltas_;
-        std::vector<Matrix> bias_;
-        Matrix input;
+        std::vector<Layer> layers_{};
+
         double learning_rate_;
 
-        Matrix sigmoid(Matrix& m) {
-            return m.apply([](double val) { return 1.0 / (1.0 + std::exp(-val)); });
-        }
+        LossFunction loss_f;
 
-        Matrix sigmoid_derivative(Matrix& m) {
-            return m.apply([](double val) { return val * (1 - val); });
-        }
+        LossFunctionDerivative loss_f_derivative;
 
         Matrix compute_loss_derivative(const Matrix& predictions, const Matrix& targets) {
             return predictions - targets;
         }
 
     public:
-        double max_rnd_num = 10;
-        double min_rnd_num = -10;
-        explicit NeuralNetwork(IList arch, double learning_rate = 0.01) : learning_rate_(learning_rate) {
-            assert(arch.size() >= 2);
-            assert(*arch.begin() > 0);
-            for(auto it = arch.begin(); it != arch.end() - 1; ++it) {
-                layers_.push_back(Matrix::rand(*it, *(it + 1), min_rnd_num, max_rnd_num));
-                bias_.push_back(Matrix::rand(1, *(it + 1), min_rnd_num, max_rnd_num));
+        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, LossFunction loss, double learning_rate = 0.01) : learning_rate_(learning_rate) {
+            assert(arch.size() >= 1);
+            assert(input_dim > 0);
+
+            loss_f = loss;
+
+            loss_f_derivative = LossFunctions::get_derivative_from_loss(loss);
+
+            assert(loss_f != NULL && loss_f_derivative != NULL);
+
+            for(auto it = arch.begin(); it != arch.end(); ++it) {
+                std::size_t rows;
+                ActivationFunction activf = it->activation_function();
+                std::size_t columns = it->neurons_amount();
+
+                if (it == arch.begin()) {
+                    rows = input_dim;
+                }
+                else {
+                    rows = (it-1)->neurons_amount();
+                }
+
+                layers_.emplace_back(rows, columns, activf, ActivationFunctions::get_derivative_from_activation(activf));
             }
         }
 
-        Matrix feedforward(const Matrix& input) {
-            activations_.clear();
-            Matrix activation = input;
-            this->input = input;
-            //activations_.push_back(activation);
-
-            for (auto i = 0; i < layers_.size(); ++i) {
-                activation = activation * layers_[i] + bias_[i].copy_row(0, activation.rows());
-                activation = sigmoid(activation);
-                activations_.push_back(activation);
+        void clear_layers_grads_and_intermediate_results() {
+            for (Layer l : layers_) {
+                l.zero_grads();
+                l.clear_intermediate_results();
             }
+        }
 
-            return activation;
+        void feedforward(const Matrix& input) {
+            clear_layers_grads_and_intermediate_results();
+            Matrix z = input;
+
+            for (Layer &l : layers_) {
+                z = l.get_outputs(z);
+            }
         }
 
         void backpropagate(const Matrix& target) {
-            for (int i = 0; i < layers_.size(); ++i) {
-                //std::cout << layers_[i].to_string() << std::endl;
-                //std::cout << activations_[i].to_string() << std::endl;
-            }
+            Matrix error = loss_f_derivative(layers_[layers_.size()-1].last_outputs(), target);
+            Matrix delta = error.element_multiply(layers_[layers_.size()-1].last_outputs_apply_act_func_deriv());
+            layers_[layers_.size()-1].set_delta(delta);
 
-            // Compute loss derivative
-            Matrix error = compute_loss_derivative(activations_.back(), target);
-            Matrix delta = error.element_multiply(sigmoid_derivative(activations_.back()));
-            deltas_.push_back(delta);
-            
-            
-
-            for (int i = layers_.size() - 2; i >= 0; --i) {
-                delta = delta * layers_[i + 1].transpose();
-                //std::cout << delta.to_string() << std::endl;
-                // Print delta and activation[i] sizes
-                // std::cout << delta.to_string() << std::endl;
-                // std::cout << activations_[i].to_string() << std::endl;
-                //std::cout << "Delta size: " << delta.rows() << "x" << delta.cols() << std::endl;
-                //std::cout << "Activation size: " << activations_[i].rows() << "x" << activations_[i].cols() << std::endl;
-                delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
-                deltas_.push_back(delta);
-            }
-
-            std::reverse(deltas_.begin(), deltas_.end());
-        }
-
-        void update_weights() {
-            Matrix prev_activation = this->input;
-
-            for (std::size_t i = 0; i < layers_.size(); ++i) {
-                layers_[i] = layers_[i] - ((prev_activation.transpose() * deltas_[i]).divide_scalar(deltas_[i].rows())).apply(update_weights_helper);
-                prev_activation = activations_[i];
-                bias_[i] = bias_[i] - deltas_[i].sum_rows().divide_scalar(deltas_[i].rows()).apply(update_weights_helper);
+            for (int i = layers_.size()-2; i >= 0; i -= 1) {
+                Matrix layer_error = layers_[i+1].deltas() * layers_[i+1].weights().transpose();
+                layers_[i].set_delta(layer_error.element_multiply(layers_[i].last_outputs_apply_act_func_deriv()));
             }
         }
 
-        static double update_weights_helper(double val) {
-            return val * 0.2;
+        void update_weights(const Matrix& input) {
+            Matrix prev_outputs = input;
+
+            for (Layer &l : layers_) {
+                l.update_weights(prev_outputs, learning_rate_);
+                l.update_bias(learning_rate_);
+                prev_outputs = l.last_outputs();
+            }
         }
 
-        void fit(const Matrix& X, const Matrix& Y, std::size_t epochs) {
-            for (std::size_t epoch = 0; epoch < epochs; ++epoch) {
-                Matrix output = feedforward(X);
+        TrainResult fit(const Matrix& X, const Matrix& Y, std::size_t epochs, bool verbose, const Matrix& val_x = Matrix(), const Matrix& val_y = Matrix()) {
+            TrainResult res;
+            bool validation = !val_x.is_empty() && !val_y.is_empty();
+
+            for (std::size_t epoch = 0; epoch < epochs; epoch += 1) {
+                feedforward(X);
                 backpropagate(Y);
-                update_weights();
+                update_weights(X);
 
-                if (epoch % 1 == 0) {
-                    double loss = compute_loss(output, Y);
-                    std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
+                double training_loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
+                res.training_loss.push_back(training_loss);
+
+                double validation_loss = 0;
+                if (validation) {
+                    validation_loss = loss_f(predict(val_x), val_y);
+                    res.validation_loss.push_back(training_loss);
+                }
+
+                if (verbose) {
+                    std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << training_loss;
+
+                    if (validation) {
+                        std::cout << ", Validation Loss: " << validation_loss << std::endl;
+                    }
+                    else {
+                        std::cout << std::endl;
+                    }
                 }
             }
-        }
 
-        double compute_loss(const Matrix& predictions, const Matrix& targets) {
-            Matrix diff = predictions - targets;
-            return diff.apply([](double val) { return val * val; }).mean();
+            if (verbose) {
+                std::cout << "Training complete" << std::endl;
+            }
+
+            return res;
         }
 
         Matrix predict(const Matrix& X) {
-            return feedforward(X);
+            feedforward(X);
+            return layers_[layers_.size()-1].last_outputs();
         }
 };
