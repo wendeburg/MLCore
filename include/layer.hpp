@@ -14,8 +14,8 @@ class Layer {
         Matrix activations_;
         Matrix deltas_;
 
-        double min_rnd_num = -5;
-        double max_rnd_num = 5;
+        static constexpr double min_rnd_num = -3;
+        static constexpr double max_rnd_num = 3;
 
         ActivationFunction activation_f;
         ActivationFunctionDerivative activation_f_deriv;
