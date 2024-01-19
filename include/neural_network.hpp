@@ -9,6 +9,7 @@
 
 #include "matrix.hpp"
 #include "activation_functions.hpp"
+#include "loss_functions.hpp"
 #include "layer.hpp"
 #include "layer_descriptor.hpp"
 
@@ -20,20 +21,32 @@ double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
 
 class NeuralNetwork {
     using ActivationFunction = ActivationFunctions::ActivationFunction;
+    using LossFunction = LossFunctions::LossFunction;
+    using LossFunctionDerivative = LossFunctions::LossFunctionDerivative;
 
     private:
         std::vector<Layer> layers_{};
 
         double learning_rate_;
 
+        LossFunction loss_f;
+
+        LossFunctionDerivative loss_f_derivative;
+
         Matrix compute_loss_derivative(const Matrix& predictions, const Matrix& targets) {
             return predictions - targets;
         }
 
     public:
-        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, double learning_rate = 0.01) : learning_rate_(learning_rate) {
+        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, LossFunction loss, double learning_rate = 0.01) : learning_rate_(learning_rate) {
             assert(arch.size() >= 1);
             assert(input_dim > 0);
+
+            loss_f = loss;
+
+            loss_f_derivative = LossFunctions::get_derivative_from_loss(loss);
+
+            assert(loss_f != NULL && loss_f_derivative != NULL);
 
             for(auto it = arch.begin(); it != arch.end(); ++it) {
                 std::size_t rows;
@@ -68,7 +81,7 @@ class NeuralNetwork {
         }
 
         void backpropagate(const Matrix& target) {
-            Matrix error = compute_loss_derivative(layers_[layers_.size()-1].last_outputs(), target);
+            Matrix error = loss_f_derivative(layers_[layers_.size()-1].last_outputs(), target);
             Matrix delta = error.element_multiply(layers_[layers_.size()-1].last_outputs_apply_act_func_deriv());
             layers_[layers_.size()-1].set_delta(delta);
 
@@ -95,15 +108,10 @@ class NeuralNetwork {
                 update_weights(X);
 
                 if (epoch % 100 == 0) {
-                    double loss = compute_loss(layers_[layers_.size()-1].last_outputs(), Y);
+                    double loss = loss_f(layers_[layers_.size()-1].last_outputs(), Y);
                     std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
                 }
             }
-        }
-
-        double compute_loss(const Matrix& predictions, const Matrix& targets) {
-            Matrix diff = predictions - targets;
-            return diff.apply([](double val) { return val * val; }).mean();
         }
 
         Matrix predict(const Matrix& X) {

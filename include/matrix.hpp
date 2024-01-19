@@ -257,7 +257,7 @@ class Matrix {
             return res;
         }
 
-        Matrix copy_row(std::size_t const row, int const times) const {
+        Matrix copy_row(std::size_t const row, std::size_t const times) const {
             assert(times > 0);
 
             Matrix res{times, cols_};

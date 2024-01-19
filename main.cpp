@@ -15,7 +15,7 @@ int main() {
     arch.emplace_back(2, ActivationFunctions::sigmoid);
     arch.emplace_back(1, ActivationFunctions::sigmoid);
 
-    NeuralNetwork nn(2, arch);
+    NeuralNetwork nn(2, arch, LossFunctions::mean_squared_error);
     nn.fit(x_test, y_test, 1000);
 
     // Matrix x_test({0, 0,
