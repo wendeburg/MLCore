@@ -12,17 +12,19 @@ int main() {
     Matrix y_test({0,1,1,0}, 1);
 
     std::vector<LayerDescriptor> arch;
-    arch.emplace_back(2, ActivationFunctions::sigmoid);
+    arch.emplace_back(3, ActivationFunctions::tanh);
     arch.emplace_back(1, ActivationFunctions::sigmoid);
 
-    NeuralNetwork nn(2, arch, LossFunctions::mean_squared_error);
-    TrainResult r =  nn.fit(x_test, y_test, 50, true);
+    NeuralNetwork nn(2, arch, LossFunctions::mean_squared_error, 0.1);
+    TrainResult r =  nn.fit(x_test, y_test, 10000, true);
 
     std::cout << "\n" << std::endl;
 
     for (double d : r.training_loss) {
         std::cout << d << std::endl;
     }
+
+    std::cout << nn.predict(x_test).to_string() << std::endl;
 
     // Matrix x_test({0, 0,
     //                 0, 1,
