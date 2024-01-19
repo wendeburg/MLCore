@@ -7,6 +7,9 @@
 #include "neural_network.hpp"
 
 int main() {
+    // ==================== NEURAL NETWORK tests ====================
+
+    // ==================== XOR ====================
     // Matrix x_test({0,0,
     //                0,1,
     //                1,0,
@@ -21,9 +24,10 @@ int main() {
     // TrainResult r =  nn.fit(x_test, y_test, 10000, true);
 
     // std::cout << "\n" << std::endl;
-
-
     // std::cout << nn.predict(x_test).to_string() << std::endl;
+
+
+    // ==================== Abalone ====================
 
     // Import abalone dataset from csv
     // Matrix x_test({
@@ -40,6 +44,8 @@ int main() {
     // NeuralNetwork nn(8, arch, LossFunctions::mean_squared_error, 0.1);
     // TrainResult r =  nn.fit(x_test.remove_column(0), y_test.remove_column(0), 10000, true);
 
+
+    // ==================== Housing ====================
 
     // Housing dataset
     // Matrix x_train({
@@ -58,6 +64,10 @@ int main() {
 
     // NeuralNetwork nn(13, arch, LossFunctions::mean_squared_error, 0.0001);
     // TrainResult r =  nn.fit(x_train.remove_column(0), y_train, 100000, true, x_val.remove_column(0), y_val, 500);
+
+
+
+    // ==================== Sin ====================
 
     // Test with sin function
     // Matrix x_train({
@@ -88,6 +98,10 @@ int main() {
     // std::cout << "Actual: " << x_show.apply([](double val) { return std::sin(val); }).to_string() << std::endl;
 
 
+
+    // ==================== SinC ====================
+
+
     // Test with sinC function
     // Matrix x_train({
     //     #include "xsinc_train.csv"
@@ -116,15 +130,53 @@ int main() {
     // std::cout << "Predicted: " << nn.predict(x_show).to_string() << std::endl;
     // std::cout << "Actual: " << x_show.apply([](double val) { return std::sin(M_PI*val) / (M_PI*val); }).to_string() << std::endl;
 
+
+    // ==================== PERCEPTRON tests ====================
+
+
     // Matrix x_test({0, 0,
     //                 0, 1,
     //                 1, 0,
     //                 1, 1}, 2);
-    // Matrix y_test({-1,-1,-1,1}, 1);
+                    
+    // std::cout << "Entradas: " << x_test.to_string() << std::endl;
 
-    // Perceptron p;
-    // p.fit(x_test, y_test, 1000);
-    // std::cout << p.predict(x_test).to_string() << std::endl;
+
+
+    // ==================== AND ====================
+
+    // Matrix y_and({-1,-1,-1,1}, 1);
+    // Perceptron p_and;
+    // p_and.fit(x_test, y_and, 1000);
+    // std::cout << "AND: " << p_and.predict(x_test).to_string() << std::endl;
+
+    
+    
+    // ==================== OR ====================
+
+    // Matrix y_or({-1,1,1,1}, 1);
+    // Perceptron p_or;
+    // p_or.fit(x_test, y_or, 1000);
+    // std::cout << "OR: " << p_or.predict(x_test).to_string() << std::endl;
+
+    
+    
+    // ==================== NAND ====================
+
+    // Matrix y_nand({1,1,1,-1}, 1);
+    // Perceptron p_nand;
+    // p_nand.fit(x_test, y_nand, 1000);
+    // std::cout << "NAND: " << p_nand.predict(x_test).to_string() << std::endl;
+
+    
+    
+    // ==================== NOR ====================
+
+    // Matrix y_xor({-1,1,1,-1}, 1);
+    // Perceptron p_xor;
+    // p_xor.fit(x_test, y_xor, 1000000);
+    // std::cout << "XOR: " << p_xor.predict(x_test).to_string() << std::endl;
+    // std::cout << "Iteraciones: 1000000" << std::endl;
 
     return 0;
 }

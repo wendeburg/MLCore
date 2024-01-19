@@ -121,7 +121,11 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una columna de la matriz.
+         */
         Matrix get_col(std::size_t const col) const {
+            
             assert(col < cols_);
 
             Matrix res{rows_, 1};
@@ -133,6 +137,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve la suma de una columna de la matriz.
+         */
         constexpr double sum_column(std::size_t const column) const {
             assert(column < cols_);
 
@@ -147,6 +154,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una matriz de una sola fila con la suma de cada columna.
+         */
         Matrix sum_rows() const {
             Matrix res{1, cols_};
 
@@ -157,6 +167,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una matriz con el resultado de dividir cada elemento por el escalar.
+         */
         Matrix scalar_division(const double scalar) const {
             Matrix res{rows_, cols_};
 
@@ -169,6 +182,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una matriz con el resultado de multiplicar cada elemento por el escalar.
+         */
         Matrix scalar_product(const double scalar) const {
             Matrix res{rows_, cols_};
 
@@ -181,6 +197,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una matriz de una sola fila con el resultado de multiplicar cada elemento de la fila especificada por el escalar.
+         */
         Matrix scalar_product_row(const std::size_t row, const double scalar) const {
             Matrix res{1, cols_};
 
@@ -215,6 +234,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Agrega una columna del escalar al principio de la matriz.
+         */
         void add_scalar_column(double scalar, std::size_t const column_number) {
             cols_ += 1;
 
@@ -225,6 +247,9 @@ class Matrix {
             }
         }
 
+        /**
+         * @brief Devuelve una matriz con el resultado de multiplicar cada elemento por el elemento correspondiente de la matriz especificada.
+         */
         Matrix element_multiply(Matrix const& R) const {
             assert(cols_ == R.cols_ && rows_ == R.rows_);
 
@@ -240,7 +265,9 @@ class Matrix {
             return res;
         }
 
-        // Mean
+        /**
+         * @brief Devuelve la media de todos los elementos de la matriz.
+         */
         double mean() const {
             double res{};
 
@@ -251,6 +278,9 @@ class Matrix {
             return res / data_.size();
         }
 
+        /**
+         * @brief Quita la columna especificada de la matriz.
+         */
         Matrix remove_column(std::size_t const column) const {
             assert(column < cols_);
 
@@ -269,6 +299,9 @@ class Matrix {
             return res;
         }
 
+        /**
+         * @brief Devuelve una matriz con la fila especificada copiada la cantidad de veces especificada.
+         */
         Matrix copy_row(std::size_t const row, std::size_t const times) const {
             assert(times > 0);
 

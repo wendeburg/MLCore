@@ -72,16 +72,22 @@ class NeuralNetwork {
             Matrix z = input;
 
             for (Layer &l : layers_) {
+                // La entrada de la capa actual es la salida de la capa anterior
                 z = l.get_outputs(z);
             }
         }
 
         void backpropagate(const Matrix& target) {
+            // error = y - a^L donde y es el target y a^L es la salida de la ultima capa
             Matrix error = loss_f_derivative(layers_[layers_.size()-1].last_outputs(), target);
+            // delta = error * phi'(z^L) donde phi es la funcion de perdida, z es la salida de la capa L y L es la ultima capa
             Matrix delta = error.element_multiply(layers_[layers_.size()-1].last_outputs_apply_act_func_deriv());
+            // Guardamos la matriz de deltas de la ultima capa
             layers_[layers_.size()-1].set_delta(delta);
 
             for (int i = layers_.size()-2; i >= 0; i -= 1) {
+                // Para las capas anteriores, el error es el (delta de la capa siguiente * los pesos de la capa siguiente transpuestos) 
+                // multiplicado por la derivada de la funcion de activacion de la capa actual (element-wise)
                 Matrix layer_error = layers_[i+1].deltas() * layers_[i+1].weights().transpose();
                 layers_[i].set_delta(layer_error.element_multiply(layers_[i].last_outputs_apply_act_func_deriv()));
             }
