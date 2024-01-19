@@ -112,18 +112,18 @@ class NeuralNetwork {
                 double validation_loss = 0;
                 if (validation) {
                     validation_loss = loss_f(predict(val_x), val_y);
-                    res.validation_loss.push_back(training_loss);
+                    res.validation_loss.push_back(validation_loss);
                 }
 
                 if (verbose) {
-                    std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << training_loss;
+                        std::cout << "Epoch " << epoch << "/" << epochs << ", " << "Training Loss: " << training_loss;
 
-                    if (validation) {
-                        std::cout << ", Validation Loss: " << validation_loss << std::endl;
-                    }
-                    else {
-                        std::cout << std::endl;
-                    }
+                        if (validation) {
+                            std::cout << ", Validation Loss: " << validation_loss << std::endl;
+                        }
+                        else {
+                            std::cout << std::endl;
+                        }
                 }
             }
 

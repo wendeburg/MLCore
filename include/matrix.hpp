@@ -121,6 +121,18 @@ class Matrix {
             return res;
         }
 
+        Matrix get_col(std::size_t const col) const {
+            assert(col < cols_);
+
+            Matrix res{rows_, 1};
+
+            for(auto r{0uz}; r < rows_; r += 1) {
+                res[r, 0] = data_[r*cols_ + col];
+            }
+
+            return res;
+        }
+
         constexpr double sum_column(std::size_t const column) const {
             assert(column < cols_);
 
@@ -280,7 +292,7 @@ class Matrix {
         bool is_empty() const {
             return data_.size() == 0 && cols_ == 0 && rows_ == 0;
         }
-
+        
         std::string to_string() const {
             bool row_start = true;
 
