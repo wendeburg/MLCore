@@ -10,6 +10,7 @@
 #include "matrix.hpp"
 #include "activation_functions.hpp"
 #include "layer.hpp"
+#include "layer_descriptor.hpp"
 
 // Loss function
 double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
@@ -18,7 +19,7 @@ double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
 }
 
 class NeuralNetwork {
-    using IList = std::initializer_list<std::size_t>;
+    using ActivationFunction = ActivationFunctions::ActivationFunction;
 
     private:
         std::vector<Layer> layers_{};
@@ -30,12 +31,23 @@ class NeuralNetwork {
         }
 
     public:
-        explicit NeuralNetwork(IList arch, double learning_rate = 0.01) : learning_rate_(learning_rate) {
-            assert(arch.size() >= 2);
-            assert(*arch.begin() > 0);
+        explicit NeuralNetwork(std::size_t input_dim, std::vector<LayerDescriptor> arch, double learning_rate = 0.01) : learning_rate_(learning_rate) {
+            assert(arch.size() >= 1);
+            assert(input_dim > 0);
 
-            for(auto it = arch.begin(); it != arch.end() - 1; ++it) {
-                layers_.emplace_back(*it, *(it + 1));
+            for(auto it = arch.begin(); it != arch.end(); ++it) {
+                std::size_t rows;
+                ActivationFunction activf = it->activation_function();
+                std::size_t columns = it->neurons_amount();
+
+                if (it == arch.begin()) {
+                    rows = input_dim;
+                }
+                else {
+                    rows = (it-1)->neurons_amount();
+                }
+
+                layers_.emplace_back(rows, columns, activf, ActivationFunctions::get_derivative_from_activation(activf));
             }
         }
 
@@ -82,7 +94,7 @@ class NeuralNetwork {
                 backpropagate(Y);
                 update_weights(X);
 
-                if (epoch % 1 == 0) {
+                if (epoch % 100 == 0) {
                     double loss = compute_loss(layers_[layers_.size()-1].last_outputs(), Y);
                     std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
                 }

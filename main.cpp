@@ -10,9 +10,13 @@ int main() {
                    1,0,
                    1,1,}, 2);
     Matrix y_test({0,1,1,0}, 1);
-    
-    NeuralNetwork nn{2, 2, 1};
-    nn.fit(x_test, y_test, 100);
+
+    std::vector<LayerDescriptor> arch;
+    arch.emplace_back(2, ActivationFunctions::sigmoid);
+    arch.emplace_back(1, ActivationFunctions::sigmoid);
+
+    NeuralNetwork nn(2, arch);
+    nn.fit(x_test, y_test, 1000);
 
     // Matrix x_test({0, 0,
     //                 0, 1,

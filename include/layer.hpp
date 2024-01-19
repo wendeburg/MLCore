@@ -1,11 +1,12 @@
 #include <vector>
 
 #include "matrix.hpp"
+#include "activation_functions.hpp"
 
 class Layer {
-    using ActivationFunction = double(*)(double);
-    using ActivationFunctionDerivative = double(*)(double);
-
+    using ActivationFunction = ActivationFunctions::ActivationFunction;
+    using ActivationFunctionDerivative = ActivationFunctions::ActivationFunctionDerivative;
+    
     private:
         Matrix bias_;
         Matrix weights_;
@@ -20,11 +21,13 @@ class Layer {
         ActivationFunctionDerivative activation_f_deriv;
 
     public:
-        explicit Layer(std::size_t rows, std::size_t columns) {
+        explicit Layer(std::size_t rows, std::size_t columns, ActivationFunction actf, ActivationFunctionDerivative actf_deriv) {
+            assert(actf != NULL && actf_deriv != NULL);
+
             weights_ = Matrix::rand(rows, columns, min_rnd_num, max_rnd_num);
             bias_ = Matrix::rand(1, columns, min_rnd_num, max_rnd_num);
-            activation_f = ActivationFunctions::sigmoid;
-            activation_f_deriv = ActivationFunctions::Derivatives::sigmoid_derivative;
+            activation_f = actf;
+            activation_f_deriv = actf_deriv;
         }
 
         void zero_grads() {
