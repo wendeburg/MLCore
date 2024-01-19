@@ -78,7 +78,7 @@ int main() {
     arch.emplace_back(1, ActivationFunctions::tanh);
 
     NeuralNetwork nn(1, arch, LossFunctions::mean_squared_error, 0.5);
-    TrainResult r =  nn.fit(x_train, y_train, 100000, true, x_val, y_val, 500);
+    TrainResult r =  nn.fit(x_train, y_train, 100000, true, x_val, y_val);
 
     // Compare with actual sin function
     Matrix x_show({
