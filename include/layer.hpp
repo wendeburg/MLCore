@@ -77,6 +77,15 @@ class Layer {
             bias_ = bias_ - deltas_.sum_rows().scalar_division(deltas_.rows()).scalar_product(learning_rate);
         }
 
+        std::string to_string() const {
+            std::string res = "Weights:\n";
+            res += weights_.to_string();
+            res += "\nBias:\n";
+            res += bias_.to_string();
+
+            return res;
+        }
+
         ActivationFunction activation_function() {
             return activation_f;
         }
