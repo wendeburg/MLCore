@@ -28,7 +28,9 @@ class Layer {
         }
 
         Matrix get_outputs(const Matrix &x) {
-            return activations_ = x * weights_ + (bias_.copy_row(0, x.rows()));
+            activations_ = x * weights_ + (bias_.copy_row(0, x.rows()));
+            activations_.apply(ActivationFunctions::sigmoid);
+            return activations_;
         }
 
         Matrix last_outputs() const {

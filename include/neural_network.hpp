@@ -25,10 +25,6 @@ class NeuralNetwork {
 
         double learning_rate_;
 
-        Matrix sigmoid(Matrix& m) {
-            return m.apply([](double val) { return 1.0 / (1.0 + std::exp(-val)); });
-        }
-
         Matrix sigmoid_derivative(Matrix& m) {
             return m.apply([](double val) { return val * (1 - val); });
         }

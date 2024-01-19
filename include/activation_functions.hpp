@@ -9,4 +9,8 @@ class ActivationFunctions {
             
             return -1.0;
         }
+
+        static double sigmoid(double val) {
+            return 1.0 / (1.0 + std::exp(-val));
+        }
 };
