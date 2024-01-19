@@ -33,7 +33,7 @@ class Perceptron {
                     }
 
                     // w' = w + yx
-                    Matrix yx = new_X.scalar_product(error_indices[chosen_error_index], Y[error_indices[chosen_error_index], 0]);
+                    Matrix yx = new_X.scalar_product_row(error_indices[chosen_error_index], Y[error_indices[chosen_error_index], 0]);
                     W = W + yx.transpose();
                 
                     error_indices.erase(error_indices.begin() + chosen_error_index);

@@ -5,18 +5,14 @@
 #include "neural_network.hpp"
 
 int main() {
-    Matrix x_test({0, 0, 0,
-                   0, 0, 1,
-                   0, 1, 0,
-                   0, 1, 1,
-                   1, 0, 0,
-                   1, 0, 1,
-                   1, 1, 0,
-                   1, 1, 1}, 3);
-    Matrix y_test({0,0,0,0,0,0,0,1}, 1);
+    Matrix x_test({0,0,
+                   0,1,
+                   1,0,
+                   1,1,}, 2);
+    Matrix y_test({0,1,1,0}, 1);
     
-    NeuralNetwork nn{3, 2, 1};
-    nn.fit(x_test, y_test, 10000);
+    NeuralNetwork nn{2, 2, 1};
+    nn.fit(x_test, y_test, 100);
 
     // Matrix x_test({0, 0,
     //                 0, 1,

@@ -9,6 +9,7 @@
 
 #include "matrix.hpp"
 #include "activation_functions.hpp"
+#include "layer.hpp"
 
 // Loss function
 double mean_squared_error(const Matrix& predictions, const Matrix& targets) {
@@ -20,11 +21,8 @@ class NeuralNetwork {
     using IList = std::initializer_list<std::size_t>;
 
     private:
-        std::vector<Matrix> layers_{};
-        std::vector<Matrix> activations_;
-        std::vector<Matrix> deltas_;
-        std::vector<Matrix> bias_;
-        Matrix input;
+        std::vector<Layer> layers_{};
+
         double learning_rate_;
 
         Matrix sigmoid(Matrix& m) {
@@ -40,82 +38,62 @@ class NeuralNetwork {
         }
 
     public:
-        double max_rnd_num = 10;
-        double min_rnd_num = -10;
         explicit NeuralNetwork(IList arch, double learning_rate = 0.01) : learning_rate_(learning_rate) {
             assert(arch.size() >= 2);
             assert(*arch.begin() > 0);
+
             for(auto it = arch.begin(); it != arch.end() - 1; ++it) {
-                layers_.push_back(Matrix::rand(*it, *(it + 1), min_rnd_num, max_rnd_num));
-                bias_.push_back(Matrix::rand(1, *(it + 1), min_rnd_num, max_rnd_num));
+                layers_.emplace_back(*it, *(it + 1));
             }
         }
 
-        Matrix feedforward(const Matrix& input) {
-            activations_.clear();
-            Matrix activation = input;
-            this->input = input;
-            //activations_.push_back(activation);
-
-            for (auto i = 0; i < layers_.size(); ++i) {
-                activation = activation * layers_[i] + bias_[i].copy_row(0, activation.rows());
-                activation = sigmoid(activation);
-                activations_.push_back(activation);
+        void clear_layers_grads_and_intermediate_results() {
+            for (Layer l : layers_) {
+                l.zero_grads();
+                l.clear_intermediate_results();
             }
+        }
 
-            return activation;
+        void feedforward(const Matrix& input) {
+            clear_layers_grads_and_intermediate_results();
+            Matrix z = input;
+
+            for (Layer &l : layers_) {
+                z = l.get_outputs(z);
+            }
         }
 
         void backpropagate(const Matrix& target) {
-            for (int i = 0; i < layers_.size(); ++i) {
-                //std::cout << layers_[i].to_string() << std::endl;
-                //std::cout << activations_[i].to_string() << std::endl;
-            }
+            Matrix last_layer_output = layers_[layers_.size()-1].last_outputs();
+            Matrix error = compute_loss_derivative(layers_[layers_.size()-1].last_outputs(), target);
+            Matrix delta = error.element_multiply(sigmoid_derivative(last_layer_output));
+            layers_[layers_.size()-1].set_delta(delta);
 
-            // Compute loss derivative
-            Matrix error = compute_loss_derivative(activations_.back(), target);
-            Matrix delta = error.element_multiply(sigmoid_derivative(activations_.back()));
-            deltas_.push_back(delta);
-            
-            
-
-            for (int i = layers_.size() - 2; i >= 0; --i) {
-                delta = delta * layers_[i + 1].transpose();
-                //std::cout << delta.to_string() << std::endl;
-                // Print delta and activation[i] sizes
-                // std::cout << delta.to_string() << std::endl;
-                // std::cout << activations_[i].to_string() << std::endl;
-                //std::cout << "Delta size: " << delta.rows() << "x" << delta.cols() << std::endl;
-                //std::cout << "Activation size: " << activations_[i].rows() << "x" << activations_[i].cols() << std::endl;
-                delta = delta.element_multiply(sigmoid_derivative(activations_[i]));
-                deltas_.push_back(delta);
-            }
-
-            std::reverse(deltas_.begin(), deltas_.end());
-        }
-
-        void update_weights() {
-            Matrix prev_activation = this->input;
-
-            for (std::size_t i = 0; i < layers_.size(); ++i) {
-                layers_[i] = layers_[i] - ((prev_activation.transpose() * deltas_[i]).divide_scalar(deltas_[i].rows())).apply(update_weights_helper);
-                prev_activation = activations_[i];
-                bias_[i] = bias_[i] - deltas_[i].sum_rows().divide_scalar(deltas_[i].rows()).apply(update_weights_helper);
+            for (int i = layers_.size()-2; i >= 0; i -= 1) {
+                Matrix layer_error = layers_[i+1].deltas() * layers_[i+1].weights().transpose();
+                Matrix prev_layer_outputs = layers_[i].last_outputs();
+                layers_[i].set_delta(layer_error.element_multiply(sigmoid_derivative(prev_layer_outputs)));
             }
         }
 
-        static double update_weights_helper(double val) {
-            return val * 0.2;
+        void update_weights(const Matrix& input) {
+            Matrix prev_outputs = input;
+
+            for (Layer &l : layers_) {
+                l.update_weights(prev_outputs, learning_rate_);
+                l.update_bias(learning_rate_);
+                prev_outputs = l.last_outputs();
+            }
         }
 
         void fit(const Matrix& X, const Matrix& Y, std::size_t epochs) {
-            for (std::size_t epoch = 0; epoch < epochs; ++epoch) {
-                Matrix output = feedforward(X);
+            for (std::size_t epoch = 0; epoch < epochs; epoch += 1) {
+                feedforward(X);
                 backpropagate(Y);
-                update_weights();
+                update_weights(X);
 
                 if (epoch % 1 == 0) {
-                    double loss = compute_loss(output, Y);
+                    double loss = compute_loss(layers_[layers_.size()-1].last_outputs(), Y);
                     std::cout << "Epoch " << epoch << " Loss: " << loss << std::endl;
                 }
             }
@@ -127,6 +105,7 @@ class NeuralNetwork {
         }
 
         Matrix predict(const Matrix& X) {
-            return feedforward(X);
+            feedforward(X);
+            return layers_[layers_.size()-1].last_outputs();
         }
 };
