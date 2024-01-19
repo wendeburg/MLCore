@@ -196,7 +196,7 @@ class Matrix {
 
             for (auto col{0uz}; col < cols_; col += 1) {
                 for (auto row{0uz}; row < rows_; row += 1) {
-                    res[col, row] = data_[row, col];
+                    res[col, row] = data_[row*cols_ + col];
                 }
             }
 

@@ -20,9 +20,6 @@ int main() {
 
     std::cout << "\n" << std::endl;
 
-    for (double d : r.training_loss) {
-        std::cout << d << std::endl;
-    }
 
     std::cout << nn.predict(x_test).to_string() << std::endl;
 

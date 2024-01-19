@@ -13,7 +13,7 @@ namespace LossFunctions {
     
     namespace Derivatives {
         static Matrix mean_squared_error_derivative(const Matrix& predictions, const Matrix& targets) { 
-            Matrix diff = predictions - targets;
+            Matrix diff = (predictions - targets).scalar_product(2.0);
             return diff;
         }
     };
